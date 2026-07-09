@@ -1,89 +1,89 @@
-# DirectRide — App-based Direct Bus Service (Mohammadpur → NSU/IUB/AIUB)
+# DirectRide — অ্যাপ-ভিত্তিক ডিরেক্ট বাস সার্ভিস (মোহাম্মদপুর → NSU/IUB/AIUB)
 
-**Date:** 2026-07-10
-**Status:** Approved for planning
+**তারিখ:** ২০২৬-০৭-১০
+**অবস্থা:** প্ল্যানিং-এর জন্য অনুমোদিত
 
-## 1. Overview
+## ১. সংক্ষিপ্ত বিবরণ (Overview)
 
-Ei project ta ekta app-based bus service ja Mohammadpur theke Bashundhara area-r varsity gulote (NSU, IUB, AIUB) daily commute kora student der jonno banano hocche. Mul problem: peak time e traditional bus/leguna te seat na paoa, direct comfortable ride er ovab. Solution: pre-booked fixed-seat system diye guaranteed seat, direct route.
+এই প্রজেক্টটি একটি অ্যাপ-ভিত্তিক বাস সার্ভিস, যা মোহাম্মদপুর থেকে বসুন্ধরা এলাকার ভার্সিটিগুলোতে (NSU, IUB, AIUB) প্রতিদিন যাতায়াত করা স্টুডেন্টদের জন্য তৈরি করা হচ্ছে। মূল সমস্যা: পিক টাইমে প্রচলিত বাস/লেগুনায় সিট না পাওয়া, ডিরেক্ট এবং আরামদায়ক রাইডের অভাব। সমাধান: প্রি-বুকড ফিক্সড-সিট সিস্টেম, যাতে সিট নিশ্চিত থাকে এবং রুট ডিরেক্ট হয়।
 
-Pilot phase e single route diye shuru hobe, kintu architecture emonvabe design kora hobe jate future e notun area (e.g. Dhanmondi, Uttara) ebong notun varsity easily add kora jay.
+পাইলট পর্যায়ে একটি মাত্র রুট দিয়ে শুরু হবে, কিন্তু আর্কিটেকচার এমনভাবে ডিজাইন করা হবে যাতে ভবিষ্যতে নতুন এলাকা (যেমন ধানমন্ডি, উত্তরা) এবং নতুন ভার্সিটি সহজে যোগ করা যায়।
 
-## 2. Business Model
+## ২. বিজনেস মডেল
 
-- Own/rent kora vehicle (microbus/coaster) diye service — third-party bus owner der upor depend kora hobe na
-- Fixed route, fixed daily schedule
-- Revenue: per-seat booking fare (flat fare, prottek stop-er jonno same)
-- Pilot: 4+ trips/day (e.g. 7:00, 9:00 AM — varsity-mukhi; 1:00, 5:00 PM — return)
+- নিজস্ব/ভাড়া করা গাড়ি (মাইক্রোবাস/কোস্টার) দিয়ে সার্ভিস — থার্ড-পার্টি বাস মালিকদের উপর নির্ভর করতে হবে না
+- ফিক্সড রুট, ফিক্সড দৈনিক সময়সূচী
+- আয়ের উৎস: প্রতি সিট বুকিং ভাড়া (ফ্ল্যাট ফেয়ার, প্রতিটি স্টপের জন্য একই)
+- পাইলট: দিনে ৪+ ট্রিপ (যেমন সকাল ৭:০০, ৯:০০ — ভার্সিটিমুখী; দুপুর ১:০০, বিকাল ৫:০০ — ফেরার ট্রিপ)
 
-## 3. Route Design
+## ৩. রুট ডিজাইন
 
-- **Route:** Mohammadpur → NSU → IUB → AIUB (morning direction)
-- **Return:** AIUB → IUB → NSU → Mohammadpur (evening direction, reverse stop order)
-- Ekta single bus/trip e tinta varsity-i cover hoy (multiple stop, ekta route)
-- Booking-er shomoy student nijer drop stop (NSU / IUB / AIUB) select korbe
-- Fare: flat, stop onujayi vary kore na (simplicity-r jonno, pore distance-based e migrate kora jete pare)
+- **রুট:** মোহাম্মদপুর → NSU → IUB → AIUB (সকালের দিক)
+- **ফেরার রুট:** AIUB → IUB → NSU → মোহাম্মদপুর (বিকেলের দিক, স্টপের অর্ডার উল্টো)
+- একটি সিঙ্গেল বাস/ট্রিপেই তিনটি ভার্সিটি কভার হয় (মাল্টিপল স্টপ, একটি রুট)
+- বুকিং করার সময় স্টুডেন্ট নিজের ড্রপ স্টপ (NSU / IUB / AIUB) সিলেক্ট করবে
+- ভাড়া: ফ্ল্যাট, স্টপ অনুযায়ী ভিন্ন হবে না (সিম্পলিসিটির জন্য, পরে distance-based এ পরিবর্তন করা যেতে পারে)
 
-## 4. Core System Components
+## ৪. মূল সিস্টেম কম্পোনেন্ট
 
-### 4.1 Rider App (React Native + Expo, Android + iOS)
-- Auth: phone number + OTP
-- Home: upcoming/available trip list (date, time, direction, available seat, fare)
-- Booking: trip select → stop select (NSU/IUB/AIUB) → seat select → payment
-- Payment: bKash/Nagad integration, booking confirm hoy successful payment-er por
-- My Bookings: upcoming + history, cancel option
-- Notifications: booking confirmation, trip reminder (push/SMS)
+### ৪.১ রাইডার অ্যাপ (React Native + Expo, Android + iOS)
+- অথ: ফোন নাম্বার + OTP
+- হোম: আপকামিং/available ট্রিপের লিস্ট (তারিখ, সময়, দিক, খালি সিট, ভাড়া)
+- বুকিং: ট্রিপ সিলেক্ট → স্টপ সিলেক্ট (NSU/IUB/AIUB) → সিট সিলেক্ট → পেমেন্ট
+- পেমেন্ট: bKash/Nagad ইন্টিগ্রেশন, পেমেন্ট সফল হলেই বুকিং কনফার্ম হবে
+- আমার বুকিং: আপকামিং + হিস্ট্রি, ক্যানসেল অপশন
+- নোটিফিকেশন: বুকিং কনফার্মেশন, ট্রিপ রিমাইন্ডার (পুশ/SMS)
 
-### 4.2 Admin Panel (Web dashboard)
-- Trip scheduling: create/edit trip (date, time, direction, vehicle, capacity)
-- Booking overview: per-trip booking list, seat map, revenue
-- Vehicle/driver management: basic CRUD (plate no, driver name/phone) — manual coordination, no driver app in MVP
-- Reports: daily booking count, revenue summary
+### ৪.২ অ্যাডমিন প্যানেল (ওয়েব ড্যাশবোর্ড)
+- ট্রিপ শিডিউলিং: ট্রিপ তৈরি/এডিট (তারিখ, সময়, দিক, গাড়ি, ক্যাপাসিটি)
+- বুকিং ওভারভিউ: প্রতি ট্রিপের বুকিং লিস্ট, সিট ম্যাপ, রেভিনিউ
+- গাড়ি/ড্রাইভার ম্যানেজমেন্ট: বেসিক CRUD (নাম্বার প্লেট, ড্রাইভারের নাম/ফোন) — ম্যানুয়াল কোঅর্ডিনেশন, MVP-তে ড্রাইভার অ্যাপ নেই
+- রিপোর্ট: দৈনিক বুকিং সংখ্যা, রেভিনিউ সামারি
 
-### 4.3 Backend / API
-- Trip & seat management, with seat-lock during payment to prevent double-booking
-- Payment gateway integration (bKash/Nagad)
-- Notification service (SMS + push)
-- Auth (OTP-based)
+### ৪.৩ ব্যাকএন্ড / API
+- ট্রিপ ও সিট ম্যানেজমেন্ট, পেমেন্টের সময় সিট-লক করে ডাবল-বুকিং প্রতিরোধ
+- পেমেন্ট গেটওয়ে ইন্টিগ্রেশন (bKash/Nagad)
+- নোটিফিকেশন সার্ভিস (SMS + পুশ)
+- অথ (OTP-ভিত্তিক)
 
-## 5. Data Model (high-level)
+## ৫. ডেটা মডেল (হাই-লেভেল)
 
 - **User**: id, phone, name, default_stop
 - **Trip**: id, date, departure_time, direction (to_varsity | from_varsity), vehicle_id, total_seats, available_seats
 - **Booking**: id, trip_id, user_id, stop (NSU | IUB | AIUB), seat_no, payment_status, booking_status (confirmed | cancelled)
 - **Vehicle**: id, plate_no, capacity, driver_name, driver_phone
 
-## 6. Booking Flow
+## ৬. বুকিং ফ্লো
 
-1. Student app e trip list dekhe (date/time/direction onujayi filter)
-2. Trip select → stop (NSU/IUB/AIUB) select → seat select
-3. bKash/Nagad diye payment
-4. Payment success → booking confirmed, seat locked, confirmation notification
-5. Trip-er age reminder notification
+১. স্টুডেন্ট অ্যাপে ট্রিপের লিস্ট দেখে (তারিখ/সময়/দিক অনুযায়ী ফিল্টার)
+২. ট্রিপ সিলেক্ট → স্টপ (NSU/IUB/AIUB) সিলেক্ট → সিট সিলেক্ট
+৩. bKash/Nagad দিয়ে পেমেন্ট
+৪. পেমেন্ট সফল → বুকিং কনফার্ম, সিট লক, কনফার্মেশন নোটিফিকেশন
+৫. ট্রিপের আগে রিমাইন্ডার নোটিফিকেশন
 
-## 7. Error Handling / Edge Cases
+## ৭. এরর হ্যান্ডলিং / এজ কেস
 
-- **Double booking prevention:** seat 5 minute-er jonno lock thakbe payment window-e; payment fail/timeout hole seat release hobe
-- **Payment failure:** booking pending thakbe, seat auto-release
-- **Cancellation policy:** trip-er 2 ghonta age cancel korle full refund; tar por refund nai (admin panel theke configurable)
-- **Trip full:** MVP-te waitlist thakbe na, "sold out" dekhano hobe
+- **ডাবল বুকিং প্রতিরোধ:** পেমেন্ট উইন্ডোতে সিট ৫ মিনিটের জন্য লক থাকবে; পেমেন্ট ফেইল/টাইমআউট হলে সিট রিলিজ হবে
+- **পেমেন্ট ফেইলিওর:** বুকিং পেন্ডিং থাকবে, সিট অটো-রিলিজ হবে
+- **ক্যানসেলেশন পলিসি:** ট্রিপের ২ ঘণ্টা আগে ক্যানসেল করলে ফুল রিফান্ড; তারপর রিফান্ড নেই (অ্যাডমিন প্যানেল থেকে কনফিগারযোগ্য)
+- **ট্রিপ ফুল:** MVP-তে ওয়েটলিস্ট থাকবে না, "সোল্ড আউট" দেখানো হবে
 
-## 8. Testing Approach
+## ৮. টেস্টিং অ্যাপ্রোচ
 
-- Backend: seat-lock/double-booking race condition unit test
-- Payment: bKash sandbox environment diye integration test
-- App: manual end-to-end QA (Expo Go), booking flow (login → book → pay → confirm → cancel)
+- ব্যাকএন্ড: সিট-লক/ডাবল-বুকিং রেস কন্ডিশন ইউনিট টেস্ট
+- পেমেন্ট: bKash স্যান্ডবক্স এনভায়রনমেন্ট দিয়ে ইন্টিগ্রেশন টেস্ট
+- অ্যাপ: ম্যানুয়াল এন্ড-টু-এন্ড QA (Expo Go), বুকিং ফ্লো (লগইন → বুক → পে → কনফার্ম → ক্যানসেল)
 
-## 9. Future Scope (out of MVP)
+## ৯. ভবিষ্যৎ পরিকল্পনা (MVP-এর বাইরে)
 
-- Multiple area, multiple route support
-- Driver-side app (live location share)
-- Distance-based dynamic fare
-- Subscription/pass-based recurring booking
-- Waitlist system for full trips
+- একাধিক এলাকা, একাধিক রুট সাপোর্ট
+- ড্রাইভার-সাইড অ্যাপ (লাইভ লোকেশন শেয়ার)
+- Distance-based ডাইনামিক ফেয়ার
+- সাবস্ক্রিপশন/পাস-ভিত্তিক রিকারিং বুকিং
+- ফুল ট্রিপের জন্য ওয়েটলিস্ট সিস্টেম
 
-## 10. MVP Scope Summary
+## ১০. MVP স্কোপ সামারি
 
-**In scope:** Rider app (React Native/Expo) + Admin web panel + Backend API, single route (Mohammadpur ↔ NSU/IUB/AIUB), bKash/Nagad payment, OTP auth, pre-booked fixed seats.
+**যা থাকবে:** রাইডার অ্যাপ (React Native/Expo) + অ্যাডমিন ওয়েব প্যানেল + ব্যাকএন্ড API, একটি রুট (মোহাম্মদপুর ↔ NSU/IUB/AIUB), bKash/Nagad পেমেন্ট, OTP অথ, প্রি-বুকড ফিক্সড সিট।
 
-**Out of scope (MVP):** Driver app, multi-route support, dynamic pricing, subscriptions, waitlists.
+**যা থাকবে না (MVP-তে):** ড্রাইভার অ্যাপ, মাল্টি-রুট সাপোর্ট, ডাইনামিক প্রাইসিং, সাবস্ক্রিপশন, ওয়েটলিস্ট।
