@@ -1,94 +1,94 @@
-# DirectRide — অ্যাপ-ভিত্তিক ডিরেক্ট বাস সার্ভিস
+# DirectRide — App-based Direct Bus Service
 
-## মোহাম্মদপুর – বসুন্ধরা ভার্সিটি করিডোর (NSU / IUB / AIUB)
-
----
-
-### ডকুমেন্ট কন্ট্রোল
-
-| বিষয় | বিবরণ |
-|---|---|
-| ডকুমেন্ট শিরোনাম | DirectRide — প্রোডাক্ট ডিজাইন স্পেসিফিকেশন |
-| সংস্করণ | ১.১ |
-| তারিখ | ১০ জুলাই, ২০২৬ |
-| প্রস্তুতকারী | প্রোডাক্ট প্ল্যানিং (Claude সহায়তায়) |
-| অবস্থা | অনুমোদিত — বাস্তবায়ন পরিকল্পনার জন্য প্রস্তুত |
+## Mohammadpur – Bashundhara Varsity Corridor (NSU / IUB / AIUB)
 
 ---
 
-## নির্বাহী সারসংক্ষেপ (Executive Summary)
+### Document Control
 
-DirectRide একটি অ্যাপ-নির্ভর, প্রি-বুকিং ভিত্তিক বাস সার্ভিস, যার লক্ষ্য মোহাম্মদপুর থেকে বসুন্ধরা এলাকার তিনটি বিশ্ববিদ্যালয়ে (NSU, IUB, AIUB) নিয়মিত যাতায়াতকারী শিক্ষার্থীদের জন্য একটি নির্ভরযোগ্য, সরাসরি ও নিশ্চিত-আসনবিশিষ্ট পরিবহন সমাধান প্রদান করা।
-
-বর্তমানে এই রুটের শিক্ষার্থীরা মূলত দুটি সমস্যার সম্মুখীন হন — (ক) ব্যস্ত সময়ে প্রচলিত বাস বা লেগুনায় আসন না পাওয়া, এবং (খ) সরাসরি ও আরামদায়ক যাতায়াতের বিকল্পের অভাব। DirectRide একটি প্রি-বুকড ফিক্সড-সিট মডেলের মাধ্যমে এই সমস্যা সমাধান করবে, যেখানে যাত্রীরা যাত্রার পূর্বেই নির্দিষ্ট আসন বুক করে নিশ্চিত হতে পারবেন।
-
-প্রাথমিক পর্যায়ে (পাইলট) একটি একক রুট দিয়ে কার্যক্রম শুরু হবে। তবে সিস্টেম আর্কিটেকচার এমনভাবে পরিকল্পিত হবে যাতে ভবিষ্যতে নতুন এলাকা ও নতুন প্রতিষ্ঠান সহজে যুক্ত করা যায়।
+| Item | Detail |
+|---|---|
+| Document Title | DirectRide — Product Design Specification |
+| Version | 1.1 |
+| Date | July 10, 2026 |
+| Prepared By | Product Planning (with Claude's assistance) |
+| Status | Approved — ready for implementation planning |
 
 ---
 
-## ১. ব্যবসায়িক মডেল
+## Executive Summary
 
-- **অপারেশনাল কাঠামো:** প্রতিষ্ঠানের নিজস্ব বা ভাড়াকৃত যানবাহন (মাইক্রোবাস/কোস্টার) ব্যবহার করা হবে; তৃতীয় পক্ষের বাস মালিকদের উপর নির্ভরতা থাকবে না, যাতে সেবার মান ও সময়সূচির উপর সম্পূর্ণ নিয়ন্ত্রণ বজায় থাকে।
-- **রুট কাঠামো:** নির্দিষ্ট রুট, নির্দিষ্ট দৈনিক সময়সূচি।
-- **রাজস্ব মডেল:** দুটি বিকল্প উপায়ে আয় — (ক) প্রতি-আসন এককালীন বুকিং ভাড়া (ফ্ল্যাট ফেয়ার, সকল স্টপের জন্য অভিন্ন), এবং (খ) মেয়াদভিত্তিক সাবস্ক্রিপশন প্ল্যান (সাপ্তাহিক/১৫-দিন/মাসিক) — বিস্তারিত ৩.৪ ধারায়।
-- **পাইলট পরিচালনা:** পাইলট পর্যায়ে দৈনিক আনুমানিক চার বা ততোধিক ট্রিপ প্রত্যাশিত (যেমন সকাল ৭:০০ ও ৯:০০ — বিশ্ববিদ্যালয়মুখী; দুপুর ১:০০ ও বিকাল ৫:০০ — প্রত্যাবর্তন ট্রিপ)। এটি কোনো নির্দিষ্ট/হার্ডকোডেড সময়সূচি নয় — প্রকৃত সংখ্যা ও সময় অ্যাডমিন প্যানেল থেকে চাহিদা অনুযায়ী নির্ধারিত হবে (দেখুন ৩.২)।
+DirectRide ekta app-based, pre-booking driven bus service, jar goal Mohammadpur theke Bashundhara area-r tinta varsity-te (NSU, IUB, AIUB) daily commute kora student der jonno ekta reliable, direct, ebong guaranteed-seat transport solution deya.
 
-## ২. রুট পরিকল্পনা
+Bortomane ei route-er student ra mul duita problem face koren — (a) peak time-e traditional bus/leguna-te seat na paoa, ebong (b) direct o comfortable ride-er kono option na thaka. DirectRide ekta pre-booked fixed-seat model diye eita solve korbe, jekhane rider ra ride-er age-i specific seat book kore guarantee peye jabe.
 
-| দিক | ক্রম |
+Pilot phase-e ekta single route diye service start hobe. Kintu system architecture emonvabe design kora hobe jate future-e notun area ebong notun varsity easily add kora jay.
+
+---
+
+## 1. Business Model
+
+- **Operational structure:** Company-r nijer/rent kora vehicle (microbus/coaster) use hobe — third-party bus owner-der upor depend korte hobe na, jate service quality ebong schedule-er upor full control thake.
+- **Route structure:** Fixed route, fixed daily schedule.
+- **Revenue model:** Duita way-te revenue ashbe — (a) per-seat one-time booking fare (flat fare, shob stop-er jonno same), ebong (b) duration-based subscription plan (weekly/15-day/monthly) — details section 3.3-e.
+- **Pilot operation:** Pilot phase-e daily approximately 4+ trip expected (jemon shokal 7:00 ebong 9:00 — varsity-mukhi; dupur 1:00 ebong bikal 5:00 — return trip). Eita kono fixed/hardcoded schedule na — actual number ebong time admin panel theke demand onujayi decide hobe (dekhun section 3.2).
+
+## 2. Route Design
+
+| Direction | Order |
 |---|---|
-| সকালের যাত্রা | মোহাম্মদপুর → NSU → IUB → AIUB |
-| ফিরতি যাত্রা | AIUB → IUB → NSU → মোহাম্মদপুর |
+| Morning trip | Mohammadpur → NSU → IUB → AIUB |
+| Return trip | AIUB → IUB → NSU → Mohammadpur |
 
-- একটি একক ট্রিপেই তিনটি প্রতিষ্ঠান কভার করা হবে (একাধিক স্টপবিশিষ্ট একক রুট)।
-- বুকিং প্রক্রিয়ায় যাত্রী নিজস্ব নামার স্থান (NSU / IUB / AIUB) নির্বাচন করবেন।
-- ভাড়া কাঠামো: সকল স্টপের জন্য অভিন্ন ফ্ল্যাট ফেয়ার প্রযোজ্য হবে; ভবিষ্যতে দূরত্ব-ভিত্তিক ভাড়া কাঠামোতে স্থানান্তরের সুযোগ রাখা হয়েছে।
+- Ekta single trip-e-i tinta varsity cover kora hobe (multiple stop, single route).
+- Booking-er shomoy rider nijer drop stop (NSU / IUB / AIUB) select korbe.
+- Fare structure: shob stop-er jonno same flat fare; future-e distance-based fare structure-e migrate korar option rakha ache.
 
-## ৩. মূল সিস্টেম উপাদান
+## 3. Core System Components
 
-### ৩.১ যাত্রী অ্যাপ্লিকেশন (React Native + Expo — Android ও iOS)
+### 3.1 Rider App (React Native + Expo — Android & iOS)
 
-| ফিচার | বিবরণ |
+| Feature | Detail |
 |---|---|
-| প্রমাণীকরণ | মোবাইল নম্বর ও OTP ভিত্তিক |
-| হোম স্ক্রিন | উপলব্ধ ট্রিপের তালিকা (তারিখ, সময়, দিক, খালি আসন, ভাড়া) |
-| বুকিং প্রক্রিয়া | ট্রিপ নির্বাচন → স্টপ নির্বাচন → আসন নির্বাচন → পেমেন্ট |
-| পেমেন্ট | bKash/Nagad ইন্টিগ্রেশন; পেমেন্ট সফল হলেই বুকিং চূড়ান্ত হবে |
-| বুকিং ব্যবস্থাপনা | চলমান ও পূর্ববর্তী বুকিং, বাতিলকরণ সুবিধা |
-| নোটিফিকেশন | বুকিং নিশ্চিতকরণ ও ট্রিপ রিমাইন্ডার (পুশ/SMS) |
+| Auth | Phone number + OTP based |
+| Home screen | Available trip list (date, time, direction, empty seat, fare) |
+| Booking flow | Trip select → stop select → seat select → payment |
+| Payment | bKash/Nagad integration; payment success hole-i booking confirm hobe |
+| Booking management | Upcoming + history, cancel option |
+| Notifications | Booking confirmation, trip reminder (push/SMS) |
 
-### ৩.২ অ্যাডমিন প্যানেল (ওয়েব ড্যাশবোর্ড)
+### 3.2 Admin Panel (Web Dashboard)
 
-| ফিচার | বিবরণ |
+| Feature | Detail |
 |---|---|
-| ট্রিপ শিডিউলিং | সম্পূর্ণ ম্যানুয়াল নিয়ন্ত্রণ — কোনো ট্রিপ পূর্ব-নির্ধারিত/হার্ডকোডেড থাকবে না। অ্যাডমিন প্রতিটি ট্রিপ নিজে তৈরি করবেন (তারিখ, সময়, দিক, যানবাহন, ধারণক্ষমতা নির্ধারণ করে), প্রয়োজনে এডিট বা বাতিল করবেন। কবে কতগুলো ও কোন সময়ের ট্রিপ চলবে — এই সিদ্ধান্ত সম্পূর্ণভাবে অ্যাডমিনের হাতে থাকবে |
-| বুকিং ওভারভিউ | প্রতিটি ট্রিপের বুকিং তালিকা, আসন মানচিত্র, রাজস্ব |
-| যানবাহন ও চালক ব্যবস্থাপনা | মৌলিক CRUD (নম্বর প্লেট, চালকের নাম/ফোন); MVP পর্যায়ে পৃথক চালক অ্যাপ থাকবে না, সমন্বয় ম্যানুয়ালি পরিচালিত হবে |
-| রিপোর্টিং | দৈনিক বুকিং সংখ্যা ও রাজস্ব সারসংক্ষেপ |
+| Trip scheduling | Fully manual control — kono trip pre-defined/hardcoded thakbe na. Admin nijei protyek trip create korben (date, time, direction, vehicle, capacity set kore), dorkar hole edit/cancel korben. Kobe koto-gula ebong kon time-er trip cholbe — ei decision fully admin-er hate thakbe |
+| Booking overview | Prottek trip-er booking list, seat map, revenue |
+| Vehicle & driver management | Basic CRUD (plate number, driver name/phone); MVP-te alada driver app thakbe na, coordination manually hobe |
+| Reporting | Daily booking count, revenue summary |
 
-### ৩.৩ প্ল্যান/সাবস্ক্রিপশন মডেল
+### 3.3 Plan/Subscription Model
 
-যাত্রীরা দুই উপায়ে যাতায়াত করতে পারবেন — প্রতি-ট্রিপ এককালীন বুকিং (per-seat), অথবা মেয়াদভিত্তিক প্ল্যান কিনে। উভয় বিকল্পই একইসাথে চালু থাকবে; যাত্রী নিজের প্রয়োজন অনুযায়ী বেছে নেবেন।
+Rider ra dui way-te commute korte parben — per-trip one-time booking (per-seat), othoba duration-based plan kine. Duitai simultaneously available thakbe; rider nijer proyojon onujayi choose korben.
 
-| বিষয় | বিবরণ |
+| Item | Detail |
 |---|---|
-| প্ল্যানের ধরন | সাপ্তাহিক (৭ দিন), ১৫-দিন, মাসিক (৩০ দিন) — অ্যাডমিন প্যানেল থেকে মূল্য ও মেয়াদ নির্ধারণযোগ্য |
-| রাইড সীমা | প্ল্যান মেয়াদকালে সীমাহীন (unlimited) রাইড; তবে অপব্যবহার রোধে **প্রতিদিন সর্বোচ্চ ২টি ট্রিপ** (সাধারণত একটি যাওয়া, একটি ফেরা) সীমা প্রযোজ্য |
-| বুকিং পদ্ধতি | প্ল্যান-ধারী যাত্রীকেও প্রতিটি ট্রিপের জন্য আলাদাভাবে আসন বুক করতে হবে (আসন সংখ্যা সীমিত থাকায় নিশ্চিতকরণ প্রয়োজন); পার্থক্য শুধু এই যে বুকিং-এর সময় নতুন পেমেন্ট লাগবে না |
-| মেয়াদ শেষ | মেয়াদ শেষ হলে প্ল্যান নিষ্ক্রিয় হয়ে যাবে; পুনরায় সক্রিয় করতে নতুন প্ল্যান কিনতে হবে |
+| Plan types | Weekly (7 days), 15-day, Monthly (30 days) — admin panel theke price ebong duration configurable |
+| Ride limit | Plan duration-e unlimited ride; tobe misuse prevent korar jonno **daily max 2 trip** (usually ekta jawa, ekta fera) limit applicable |
+| Booking method | Plan holder-keo protyek trip-er jonno separately seat book korte hobe (seat count limited thakay confirmation dorkar); difference shudhu ei je booking-er shomoy notun payment lagbe na |
+| Expiry | Duration shesh hole plan inactive hoye jabe; re-activate korte notun plan kinte hobe |
 
-### ৩.৪ ব্যাকএন্ড/API
+### 3.4 Backend/API
 
-- ট্রিপ ও আসন ব্যবস্থাপনা, পেমেন্ট চলাকালীন আসন লক করে দ্বৈত-বুকিং প্রতিরোধ
-- ট্রিপ তৈরির প্রক্রিয়া সম্পূর্ণরূপে অ্যাডমিন-নিয়ন্ত্রিত (manual trigger); কোনো অটো-জেনারেটেড বা হার্ডকোডেড সময়সূচি সিস্টেমে থাকবে না
-- প্ল্যান ব্যবস্থাপনা: সক্রিয় প্ল্যান ট্র্যাকিং, মেয়াদ শেষে স্বয়ংক্রিয় নিষ্ক্রিয়করণ, দৈনিক রাইড-সীমা (২টি) যাচাইকরণ
-- পেমেন্ট গেটওয়ে ইন্টিগ্রেশন (bKash/Nagad) — এককালীন বুকিং ও প্ল্যান ক্রয় উভয়ের জন্য
-- নোটিফিকেশন সার্ভিস (SMS ও পুশ)
-- OTP-ভিত্তিক প্রমাণীকরণ ব্যবস্থা
+- Trip ebong seat management, payment-er shomoy seat lock kore double-booking prevent kora
+- Trip creation fully admin-controlled (manual trigger); kono auto-generated ba hardcoded schedule system-e thakbe na
+- Plan management: active plan tracking, expiry-te auto-deactivation, daily ride-limit (2) validation
+- Payment gateway integration (bKash/Nagad) — one-time booking ebong plan purchase duitar jonno-i
+- Notification service (SMS & push)
+- OTP-based authentication system
 
-## ৪. ডেটা মডেল (হাই-লেভেল)
+## 4. Data Model (High-level)
 
-| এনটিটি | ফিল্ডসমূহ |
+| Entity | Fields |
 |---|---|
 | User | id, phone, name, default_stop |
 | Trip | id, date, departure_time, direction (to_varsity \| from_varsity), vehicle_id, total_seats, available_seats |
@@ -97,45 +97,45 @@ DirectRide একটি অ্যাপ-নির্ভর, প্রি-বু�
 | UserPlan | id, user_id, plan_id, start_date, end_date, status (active \| expired), rides_used_today, last_ride_date |
 | Vehicle | id, plate_no, capacity, driver_name, driver_phone |
 
-## ৫. বুকিং প্রক্রিয়ার ধারা
+## 5. Booking Flow
 
-### ৫.১ এককালীন (per-seat) বুকিং
-1. যাত্রী অ্যাপে উপলব্ধ ট্রিপের তালিকা দেখেন (তারিখ/সময়/দিক অনুযায়ী ফিল্টারকৃত)
-2. ট্রিপ নির্বাচন → স্টপ (NSU/IUB/AIUB) নির্বাচন → আসন নির্বাচন
-3. bKash/Nagad এর মাধ্যমে পেমেন্ট সম্পন্ন করেন
-4. পেমেন্ট সফল হলে বুকিং নিশ্চিত হয়, আসন লক করা হয়, এবং নিশ্চিতকরণ নোটিফিকেশন পাঠানো হয়
-5. ট্রিপের পূর্বে রিমাইন্ডার নোটিফিকেশন প্রেরণ করা হয়
+### 5.1 One-time (per-seat) booking
+1. Rider app-e available trip-er list dekhe (date/time/direction onujayi filtered)
+2. Trip select → stop (NSU/IUB/AIUB) select → seat select
+3. bKash/Nagad diye payment complete kore
+4. Payment success hole booking confirm hoy, seat lock hoy, ebong confirmation notification pathano hoy
+5. Trip-er age reminder notification pathano hoy
 
-### ৫.২ প্ল্যান-ধারী যাত্রীর বুকিং
-1. যাত্রী সক্রিয় প্ল্যানসহ ট্রিপ নির্বাচন → স্টপ নির্বাচন → আসন নির্বাচন
-2. সিস্টেম যাচাই করে: প্ল্যান সক্রিয় আছে কিনা, এবং আজকের দৈনিক রাইড-সীমা (২টি) অতিক্রম করেনি কিনা
-3. শর্ত পূরণ হলে পেমেন্ট ছাড়াই বুকিং নিশ্চিত হয়, আসন লক করা হয়
-4. দৈনিক রাইড কাউন্টার আপডেট হয়; নিশ্চিতকরণ ও ট্রিপ-পূর্ব রিমাইন্ডার নোটিফিকেশন পাঠানো হয়
+### 5.2 Plan holder's booking
+1. Rider active plan diye trip select → stop select → seat select
+2. System validate kore: plan active ache kina, ebong ajker daily ride-limit (2) exceed korenai kina
+3. Condition satisfy hole payment chara-i booking confirm hoy, seat lock hoy
+4. Daily ride counter update hoy; confirmation ebong trip-age reminder notification pathano hoy
 
-## ৬. ঝুঁকি ব্যবস্থাপনা ও ব্যতিক্রমী পরিস্থিতি
+## 6. Error Handling / Edge Cases
 
-| পরিস্থিতি | সমাধান |
+| Scenario | Solution |
 |---|---|
-| দ্বৈত বুকিং প্রতিরোধ | পেমেন্ট উইন্ডোতে আসন ৫ মিনিটের জন্য সংরক্ষিত (লক) থাকবে; পেমেন্ট ব্যর্থ বা টাইমআউট হলে আসন মুক্ত হয়ে যাবে |
-| পেমেন্ট ব্যর্থতা | বুকিং মুলতুবি অবস্থায় থাকবে, আসন স্বয়ংক্রিয়ভাবে মুক্ত হবে |
-| বাতিলকরণ নীতি | ট্রিপের ২ ঘণ্টা পূর্বে বাতিল করলে সম্পূর্ণ অর্থফেরত; তারপর কোনো ফেরত প্রযোজ্য নয় (অ্যাডমিন প্যানেল থেকে কনফিগারযোগ্য) |
-| ট্রিপ পূর্ণ হয়ে যাওয়া | MVP পর্যায়ে ওয়েটলিস্ট সুবিধা থাকবে না; "সোল্ড আউট" প্রদর্শিত হবে |
+| Double booking prevention | Payment window-e seat 5 minute-er jonno lock thakbe; payment fail/timeout hole seat release hobe |
+| Payment failure | Booking pending state-e thakbe, seat auto-release hobe |
+| Cancellation policy | Trip-er 2 ghonta age cancel korle full refund; tarpor refund nai (admin panel theke configurable) |
+| Trip full | MVP-te waitlist thakbe na; "sold out" show hobe |
 
-## ৭. টেস্টিং কৌশল
+## 7. Testing Approach
 
-- **ব্যাকএন্ড:** আসন-লক ও দ্বৈত-বুকিং সংক্রান্ত রেস কন্ডিশনের ইউনিট টেস্ট
-- **পেমেন্ট:** bKash স্যান্ডবক্স পরিবেশে ইন্টিগ্রেশন টেস্ট
-- **অ্যাপ্লিকেশন:** ম্যানুয়াল এন্ড-টু-এন্ড QA (Expo Go) — সম্পূর্ণ বুকিং প্রবাহ (লগইন → বুকিং → পেমেন্ট → নিশ্চিতকরণ → বাতিলকরণ)
+- **Backend:** Seat-lock ebong double-booking race condition-er unit test
+- **Payment:** bKash sandbox environment diye integration test
+- **App:** Manual end-to-end QA (Expo Go) — full booking flow (login → book → pay → confirm → cancel)
 
-## ৮. ভবিষ্যৎ পরিকল্পনা (MVP-এর বাইরে)
+## 8. Future Scope (Out of MVP)
 
-- একাধিক এলাকা ও একাধিক রুট সংযোজন
-- চালক-সাইড অ্যাপ্লিকেশন (লাইভ লোকেশন শেয়ারিং)
-- দূরত্ব-ভিত্তিক গতিশীল ভাড়া কাঠামো
-- পূর্ণ ট্রিপের জন্য ওয়েটলিস্ট সিস্টেম
+- Multiple area, multiple route support
+- Driver-side app (live location sharing)
+- Distance-based dynamic fare structure
+- Waitlist system for full trips
 
-## ৯. MVP পরিধি সারসংক্ষেপ
+## 9. MVP Scope Summary
 
-**অন্তর্ভুক্ত:** যাত্রী অ্যাপ্লিকেশন (React Native/Expo), অ্যাডমিন ওয়েব প্যানেল, ব্যাকএন্ড API, একক রুট (মোহাম্মদপুর ↔ NSU/IUB/AIUB), bKash/Nagad পেমেন্ট, OTP প্রমাণীকরণ, প্রি-বুকড ফিক্সড আসন ব্যবস্থা, এককালীন বুকিং ও মেয়াদভিত্তিক প্ল্যান (সাপ্তাহিক/১৫-দিন/মাসিক) — উভয় বিকল্প।
+**In scope:** Rider app (React Native/Expo), admin web panel, backend API, single route (Mohammadpur ↔ NSU/IUB/AIUB), bKash/Nagad payment, OTP auth, pre-booked fixed-seat system, one-time booking ebong duration-based plan (weekly/15-day/monthly) — both options.
 
-**অন্তর্ভুক্ত নয় (MVP পর্যায়ে):** চালক অ্যাপ্লিকেশন, মাল্টি-রুট সাপোর্ট, ডাইনামিক প্রাইসিং, ওয়েটলিস্ট ব্যবস্থা।
+**Out of scope (MVP):** Driver app, multi-route support, dynamic pricing, waitlist system.
