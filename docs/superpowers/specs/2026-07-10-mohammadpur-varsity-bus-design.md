@@ -86,7 +86,34 @@ Rider রা দুই way-তে commute করতে পারবেন — pe
 - Notification service (SMS & push)
 - OTP-based authentication system
 
-## ৪. Data Model (High-level)
+## ৪. UI Screens & Key Buttons/Actions
+
+### ৪.১ Rider App
+
+| Screen | Main Buttons/Actions |
+|---|---|
+| Splash/Login | "Login with Phone Number", "Send OTP", "Verify OTP" |
+| Home | "Book a Trip", trip list-এ প্রতিটা card-এ "View Details", filter (date/direction) icon, "My Plan" (active plan থাকলে status card দেখাবে) |
+| Trip Details | Stop select dropdown (NSU/IUB/AIUB), Seat select grid, "Continue to Payment" / "Book with Plan" (plan active থাকলে) |
+| Payment | "Pay with bKash", "Pay with Nagad", "Cancel" |
+| Booking Confirmation | "View Booking", "Back to Home" |
+| My Bookings | Tabs: "Upcoming" / "History", প্রতিটা booking-এ "Cancel Booking" (eligible হলে), "View Details" |
+| Plans | Plan card গুলোতে (Weekly/15-day/Monthly) "Buy Plan", active plan থাকলে "View Plan Details" (remaining days, today's ride count) |
+| Profile | "Edit Profile", "Default Stop" set, "Logout" |
+
+### ৪.২ Admin Panel
+
+| Screen | Main Buttons/Actions |
+|---|---|
+| Login | "Login" (admin credential দিয়ে) |
+| Dashboard | Summary cards (today's trips, bookings, revenue), "Create New Trip" |
+| Trip Management | "+ Create Trip" (date, time, direction, vehicle, capacity form), প্রতিটা trip row-এ "Edit", "Cancel Trip" |
+| Booking Overview | Trip select করলে booking list + seat map, "Export"/"View Details" per booking |
+| Vehicle & Driver | "+ Add Vehicle", প্রতিটা row-এ "Edit", "Remove" |
+| Plans Management | "+ Create Plan" (name, price, duration, daily_ride_limit), "Edit", "Deactivate" |
+| Reports | Date range filter, "Generate Report" / "Export CSV" |
+
+## ৫. Data Model (High-level)
 
 | Entity | Fields |
 |---|---|
@@ -97,22 +124,22 @@ Rider রা দুই way-তে commute করতে পারবেন — pe
 | UserPlan | id, user_id, plan_id, start_date, end_date, status (active \| expired), rides_used_today, last_ride_date |
 | Vehicle | id, plate_no, capacity, driver_name, driver_phone |
 
-## ৫. Booking Flow
+## ৬. Booking Flow
 
-### ৫.১ One-time (per-seat) booking
+### ৬.১ One-time (per-seat) booking
 1. Rider app-এ available trip-এর list দেখে (date/time/direction অনুযায়ী filtered)
 2. Trip select → stop (NSU/IUB/AIUB) select → seat select
 3. bKash/Nagad দিয়ে payment complete করে
 4. Payment success হলে booking confirm হয়, seat lock হয়, এবং confirmation notification পাঠানো হয়
 5. Trip-এর আগে reminder notification পাঠানো হয়
 
-### ৫.২ Plan holder-এর booking
+### ৬.২ Plan holder-এর booking
 1. Rider active plan দিয়ে trip select → stop select → seat select
 2. System validate করে: plan active আছে কিনা, এবং আজকের daily ride-limit (২) exceed করেনাই কিনা
 3. Condition satisfy হলে payment ছাড়াই booking confirm হয়, seat lock হয়
 4. Daily ride counter update হয়; confirmation এবং trip-আগে reminder notification পাঠানো হয়
 
-## ৬. Error Handling / Edge Cases
+## ৭. Error Handling / Edge Cases
 
 | Scenario | Solution |
 |---|---|
@@ -121,20 +148,20 @@ Rider রা দুই way-তে commute করতে পারবেন — pe
 | Cancellation policy | Trip-এর ২ ঘণ্টা আগে cancel করলে full refund; তারপর refund নাই (admin panel থেকে configurable) |
 | Trip full | MVP-তে waitlist থাকবে না; "sold out" show হবে |
 
-## ৭. Testing Approach
+## ৮. Testing Approach
 
 - **Backend:** Seat-lock এবং double-booking race condition-এর unit test
 - **Payment:** bKash sandbox environment দিয়ে integration test
 - **App:** Manual end-to-end QA (Expo Go) — full booking flow (login → book → pay → confirm → cancel)
 
-## ৮. Future Scope (Out of MVP)
+## ৯. Future Scope (Out of MVP)
 
 - Multiple area, multiple route support
 - Driver-side app (live location sharing)
 - Distance-based dynamic fare structure
 - Waitlist system for full trips
 
-## ৯. MVP Scope Summary
+## ১০. MVP Scope Summary
 
 **In scope:** Rider app (React Native/Expo), admin web panel, backend API, single route (মোহাম্মদপুর ↔ NSU/IUB/AIUB), bKash/Nagad payment, OTP auth, pre-booked fixed-seat system, one-time booking এবং duration-based plan (weekly/15-day/monthly) — উভয় option।
 
