@@ -14,16 +14,38 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { supabase } from '../../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'EmailVerification'>;
 
 const CODE_LENGTH = 6;
 
-export default function EmailVerificationScreen({ navigation }: Props) {
+export default function EmailVerificationScreen({ navigation, route }: Props) {
+  const { email } = route.params;
   const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const isValid = code.length === CODE_LENGTH;
   const digits = Array.from({ length: CODE_LENGTH }, (_, i) => code[i] ?? '');
+
+  async function handleVerify() {
+    setError(null);
+    setSubmitting(true);
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: 'signup',
+    });
+    setSubmitting(false);
+    if (verifyError) {
+      setError('Invalid or expired code. Please try again.');
+      return;
+    }
+    // Success: signUp's session is now confirmed; onAuthStateChange fires,
+    // RootNavigator swaps to MainTabs on its own.
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -69,15 +91,27 @@ export default function EmailVerificationScreen({ navigation }: Props) {
             autoFocus
           />
 
-          <TouchableOpacity>
-            <Text style={styles.resend}>Didn't get a code? Resend</Text>
+          <TouchableOpacity
+            disabled={resending}
+            onPress={async () => {
+              setResending(true);
+              setError(null);
+              const { error: resendError } = await supabase.auth.resend({ type: 'signup', email });
+              setResending(false);
+              if (resendError) {
+                setError('Could not resend code. Please try again shortly.');
+              }
+            }}
+          >
+            <Text style={styles.resend}>{resending ? 'Sending…' : "Didn't get a code? Resend"}</Text>
           </TouchableOpacity>
+          {error && <Text style={styles.errorText}>{error}</Text>}
         </View>
 
         <PrimaryButton
-          label="Verify Email"
-          disabled={!isValid}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] })}
+          label={submitting ? 'Verifying…' : 'Verify Email'}
+          disabled={!isValid || submitting}
+          onPress={handleVerify}
           style={styles.button}
         />
       </KeyboardAvoidingView>
@@ -129,6 +163,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.accent,
     marginTop: spacing.lg,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontFamily: fonts.bodyMedium,
+    marginTop: spacing.sm,
+    textAlign: 'center',
   },
   button: { marginBottom: spacing.lg },
 });

@@ -11,17 +11,69 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { supabase } from '../../lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+
+function mapAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) {
+    return 'Incorrect email or password.';
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Please verify your email before logging in.';
+  }
+  return 'Something went wrong. Please try again.';
+}
 
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const isValid = email.includes('@') && password.length >= 6;
+
+  async function handleLogin() {
+    setError(null);
+    setSubmitting(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    setSubmitting(false);
+    if (signInError) {
+      setError(mapAuthError(signInError.message));
+    }
+    // On success, AuthContext's onAuthStateChange updates session automatically;
+    // RootNavigator swaps to MainTabs on its own — no manual navigation here.
+  }
+
+  async function handleGoogleLogin() {
+    setError(null);
+    setGoogleSubmitting(true);
+    const redirectTo = AuthSession.makeRedirectUri();
+    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (oauthError || !data.url) {
+      setGoogleSubmitting(false);
+      setError('Could not start Google sign-in. Please try again.');
+      return;
+    }
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    setGoogleSubmitting(false);
+    if (result.type !== 'success') {
+      return; // user cancelled — no error needed
+    }
+    // Supabase exchanges the code and onAuthStateChange fires automatically
+    // once the session lands in storage; RootNavigator swaps to MainTabs.
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -38,9 +90,16 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.formBlock}>
-          <TouchableOpacity style={styles.googleButton} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.85}
+            disabled={googleSubmitting}
+            onPress={handleGoogleLogin}
+          >
             <Ionicons name="logo-google" size={18} color={colors.text} />
-            <Text style={styles.googleButtonText}>Continue with Google</Text>
+            <Text style={styles.googleButtonText}>
+              {googleSubmitting ? 'Opening Google…' : 'Continue with Google'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.orRow}>
@@ -86,10 +145,11 @@ export default function LoginScreen({ navigation }: Props) {
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
 
+          {error && <Text style={styles.errorText}>{error}</Text>}
           <PrimaryButton
-            label="Log In"
-            disabled={!isValid}
-            onPress={() => navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] })}
+            label={submitting ? 'Logging in…' : 'Log In'}
+            disabled={!isValid || submitting}
+            onPress={handleLogin}
             style={styles.button}
           />
         </View>
@@ -174,6 +234,7 @@ const styles = StyleSheet.create({
   forgotRow: { alignItems: 'flex-end', marginTop: spacing.sm },
   forgotText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
   button: { marginTop: spacing.lg },
+  errorText: { color: colors.danger, fontSize: 13, fontFamily: fonts.bodyMedium, marginBottom: spacing.sm, textAlign: 'center' },
   footerBlock: { marginBottom: spacing.lg },
   signupRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.md },
   signupText: { ...typography.body, color: colors.textMuted },
