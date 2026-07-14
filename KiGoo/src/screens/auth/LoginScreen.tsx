@@ -11,10 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 import { supabase } from '../../lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -34,6 +38,7 @@ export default function LoginScreen({ navigation }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const isValid = email.includes('@') && password.length >= 6;
 
   async function handleLogin() {
@@ -46,6 +51,28 @@ export default function LoginScreen({ navigation }: Props) {
     }
     // On success, AuthContext's onAuthStateChange updates session automatically;
     // RootNavigator swaps to MainTabs on its own — no manual navigation here.
+  }
+
+  async function handleGoogleLogin() {
+    setError(null);
+    setGoogleSubmitting(true);
+    const redirectTo = AuthSession.makeRedirectUri();
+    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (oauthError || !data.url) {
+      setGoogleSubmitting(false);
+      setError('Could not start Google sign-in. Please try again.');
+      return;
+    }
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    setGoogleSubmitting(false);
+    if (result.type !== 'success') {
+      return; // user cancelled — no error needed
+    }
+    // Supabase exchanges the code and onAuthStateChange fires automatically
+    // once the session lands in storage; RootNavigator swaps to MainTabs.
   }
 
   return (
@@ -63,9 +90,16 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.formBlock}>
-          <TouchableOpacity style={styles.googleButton} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={styles.googleButton}
+            activeOpacity={0.85}
+            disabled={googleSubmitting}
+            onPress={handleGoogleLogin}
+          >
             <Ionicons name="logo-google" size={18} color={colors.text} />
-            <Text style={styles.googleButtonText}>Continue with Google</Text>
+            <Text style={styles.googleButtonText}>
+              {googleSubmitting ? 'Opening Google…' : 'Continue with Google'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.orRow}>
