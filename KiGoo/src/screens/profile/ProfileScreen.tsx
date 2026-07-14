@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
+import { supabase } from '../../lib/supabase';
 
 const menuItems = ['Edit Profile', 'Default Stop', 'Help & Support'];
 
@@ -34,7 +35,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logoutBtn}>
+      <TouchableOpacity style={styles.logoutBtn} onPress={() => supabase.auth.signOut()}>
         <Text style={styles.logoutText}>Log out</Text>
       </TouchableOpacity>
     </SafeAreaView>

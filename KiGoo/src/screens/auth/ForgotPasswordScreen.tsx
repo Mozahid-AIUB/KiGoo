@@ -14,13 +14,28 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { supabase } from '../../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
 export default function ForgotPasswordScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const isValid = email.includes('@');
+
+  async function handleReset() {
+    setError(null);
+    setSubmitting(true);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+    setSubmitting(false);
+    if (resetError) {
+      setError('Could not send reset link. Please check the email and try again.');
+      return;
+    }
+    setSent(true);
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -53,10 +68,11 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
               keyboardType="email-address"
             />
 
+            {error && <Text style={styles.errorText}>{error}</Text>}
             <PrimaryButton
-              label="Send Reset Link"
-              disabled={!isValid}
-              onPress={() => setSent(true)}
+              label={submitting ? 'Sending…' : 'Send Reset Link'}
+              disabled={!isValid || submitting}
+              onPress={handleReset}
               style={styles.button}
             />
           </>
@@ -111,5 +127,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   button: { marginTop: spacing.lg },
+  errorText: { color: colors.danger, fontSize: 13, fontFamily: fonts.bodyMedium, marginTop: spacing.sm, textAlign: 'center' },
   successBlock: { marginTop: spacing.xl },
 });
