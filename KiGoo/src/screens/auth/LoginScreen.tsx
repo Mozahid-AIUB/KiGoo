@@ -14,14 +14,39 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { supabase } from '../../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+
+function mapAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) {
+    return 'Incorrect email or password.';
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Please verify your email before logging in.';
+  }
+  return 'Something went wrong. Please try again.';
+}
 
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const isValid = email.includes('@') && password.length >= 6;
+
+  async function handleLogin() {
+    setError(null);
+    setSubmitting(true);
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    setSubmitting(false);
+    if (signInError) {
+      setError(mapAuthError(signInError.message));
+    }
+    // On success, AuthContext's onAuthStateChange updates session automatically;
+    // RootNavigator swaps to MainTabs on its own — no manual navigation here.
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -86,10 +111,11 @@ export default function LoginScreen({ navigation }: Props) {
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
 
+          {error && <Text style={styles.errorText}>{error}</Text>}
           <PrimaryButton
-            label="Log In"
-            disabled={!isValid}
-            onPress={() => navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] })}
+            label={submitting ? 'Logging in…' : 'Log In'}
+            disabled={!isValid || submitting}
+            onPress={handleLogin}
             style={styles.button}
           />
         </View>
@@ -174,6 +200,7 @@ const styles = StyleSheet.create({
   forgotRow: { alignItems: 'flex-end', marginTop: spacing.sm },
   forgotText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textMuted },
   button: { marginTop: spacing.lg },
+  errorText: { color: colors.danger, fontSize: 13, fontFamily: fonts.bodyMedium, marginBottom: spacing.sm, textAlign: 'center' },
   footerBlock: { marginBottom: spacing.lg },
   signupRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.md },
   signupText: { ...typography.body, color: colors.textMuted },

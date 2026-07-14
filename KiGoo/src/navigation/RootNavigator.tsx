@@ -24,7 +24,7 @@ export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
-  EmailVerification: undefined;
+  EmailVerification: { email: string };
   MainTabs: undefined;
   CampusHub: undefined;
   Routes: undefined;

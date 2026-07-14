@@ -15,6 +15,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { supabase } from '../../lib/supabase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
@@ -34,6 +35,8 @@ export default function SignUpScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const isValid =
     firstName.trim().length > 0 &&
@@ -43,6 +46,33 @@ export default function SignUpScreen({ navigation }: Props) {
     gender !== null &&
     password.length >= 6 &&
     password === confirmPassword;
+
+  async function handleSignUp() {
+    setError(null);
+    setSubmitting(true);
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          phone: `+880${phone}`,
+          gender,
+        },
+      },
+    });
+    setSubmitting(false);
+    if (signUpError) {
+      setError(
+        signUpError.message.includes('already registered')
+          ? 'An account with this email already exists.'
+          : 'Something went wrong. Please try again.'
+      );
+      return;
+    }
+    navigation.navigate('EmailVerification', { email });
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -174,10 +204,11 @@ export default function SignUpScreen({ navigation }: Props) {
             />
           </View>
 
+          {error && <Text style={styles.errorText}>{error}</Text>}
           <PrimaryButton
-            label="Create Account"
-            disabled={!isValid}
-            onPress={() => navigation.navigate('EmailVerification')}
+            label={submitting ? 'Creating account…' : 'Create Account'}
+            disabled={!isValid || submitting}
+            onPress={handleSignUp}
             style={styles.button}
           />
 
@@ -261,6 +292,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   button: { marginTop: spacing.sm },
+  errorText: { color: colors.danger, fontSize: 13, fontFamily: fonts.bodyMedium, marginBottom: spacing.sm, textAlign: 'center' },
   loginRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.lg },
   loginText: { ...typography.body, color: colors.textMuted },
   loginLink: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.accent },
