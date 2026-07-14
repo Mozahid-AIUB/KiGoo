@@ -51,7 +51,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator initialRouteName={session ? 'MainTabs' : 'Login'}>
+    <Stack.Navigator key={session ? 'app' : 'auth'} initialRouteName={session ? 'MainTabs' : 'Login'}>
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen
