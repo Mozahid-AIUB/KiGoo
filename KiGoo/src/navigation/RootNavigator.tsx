@@ -18,6 +18,7 @@ import CommunityScreen from '../screens/community/CommunityScreen';
 import StudentVerificationScreen from '../screens/verification/StudentVerificationScreen';
 import VerificationStatusScreen from '../screens/verification/VerificationStatusScreen';
 import type { RouteId, Trip } from '../screens/home/mockTrips';
+import { useAuth } from '../state/AuthContext';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -43,8 +44,14 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
   return (
-    <Stack.Navigator initialRouteName="MainTabs">
+    <Stack.Navigator initialRouteName={session ? 'MainTabs' : 'Login'}>
       <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
       <Stack.Screen
