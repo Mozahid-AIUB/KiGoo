@@ -56,7 +56,25 @@ export default function LoginScreen({ navigation }: Props) {
   async function handleGoogleLogin() {
     setError(null);
     setGoogleSubmitting(true);
-    const redirectTo = AuthSession.makeRedirectUri();
+    const redirectTo = AuthSession.makeRedirectUri({ scheme: 'kigoo' });
+
+    if (Platform.OS === 'web') {
+      // On web, Chrome's popup isolation (COOP) breaks expo-web-browser's
+      // window.closed polling, so the popup is reported "dismissed" the
+      // instant it opens. A full-page redirect avoids that entirely —
+      // Supabase's client has detectSessionInUrl enabled for web and
+      // parses the returned session tokens automatically on load.
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
+      if (oauthError) {
+        setGoogleSubmitting(false);
+        setError('Could not start Google sign-in. Please try again.');
+      }
+      return;
+    }
+
     const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo, skipBrowserRedirect: true },

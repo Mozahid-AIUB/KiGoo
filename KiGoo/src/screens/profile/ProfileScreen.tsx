@@ -1,11 +1,18 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../state/AuthContext';
 
 const menuItems = ['Edit Profile', 'Default Stop', 'Help & Support'];
 
 export default function ProfileScreen() {
+  const { user } = useAuth();
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+  const name = (user?.user_metadata?.full_name as string | undefined) ?? 'Mozahid';
+  const initial = name.charAt(0).toUpperCase();
+  const phone = (user?.user_metadata?.phone as string | undefined) ?? 'No phone number';
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -14,12 +21,16 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>M</Text>
-        </View>
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+        ) : (
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initial}</Text>
+          </View>
+        )}
         <View>
-          <Text style={styles.name}>Mozahid</Text>
-          <Text style={styles.phone}>+880 1XXXXXXXXX</Text>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.phone}>{phone}</Text>
         </View>
       </View>
 
@@ -68,6 +79,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   avatarText: { color: colors.white, fontFamily: fonts.display, fontSize: 20 },
+  avatarImage: { width: 52, height: 52, borderRadius: 26, marginRight: spacing.md },
   name: { fontFamily: fonts.bodySemiBold, fontSize: 16, color: colors.text },
   phone: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   menu: {
