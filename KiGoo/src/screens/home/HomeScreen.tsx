@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,7 +9,8 @@ import AnnouncementSlider, { type Announcement } from '../../components/Announce
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import type { MainTabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
-import { mockVerification } from '../../state/verification';
+import { fetchVerification } from '../../state/verification';
+import { useAuth } from '../../state/AuthContext';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Home'>,
@@ -23,13 +24,38 @@ type Spotlight = {
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
   bg: string;
+  imageUrl: string;
 };
 
 const spotlights: Spotlight[] = [
-  { id: 's1', title: 'Verified Students Only', icon: 'shield-checkmark', bg: colors.ink },
-  { id: 's2', title: 'Secure QR Boarding', icon: 'qr-code', bg: colors.accent },
-  { id: 's3', title: 'New Routes Coming', icon: 'map', bg: '#3D3170' },
-  { id: 's4', title: 'Refer a Friend', icon: 'people', bg: '#5B4FC7' },
+  {
+    id: 's1',
+    title: 'Verified Students Only',
+    icon: 'shield-checkmark',
+    bg: colors.ink,
+    imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80',
+  },
+  {
+    id: 's2',
+    title: 'Secure QR Boarding',
+    icon: 'qr-code',
+    bg: colors.accent,
+    imageUrl: 'https://images.unsplash.com/photo-1595079676339-1534801ad6cf?w=400&q=80',
+  },
+  {
+    id: 's3',
+    title: 'New Routes Coming',
+    icon: 'map',
+    bg: '#3D3170',
+    imageUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80',
+  },
+  {
+    id: 's4',
+    title: 'Refer a Friend',
+    icon: 'people',
+    bg: '#5B4FC7',
+    imageUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&q=80',
+  },
 ];
 
 const announcements: Announcement[] = [
@@ -39,6 +65,8 @@ const announcements: Announcement[] = [
     body: 'Daily trips on the Mohammadpur corridor. Book before seats fill up.',
     mediaType: 'image',
     bg: colors.ink,
+    imageUrl:
+      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80',
   },
   {
     id: 'a2',
@@ -46,14 +74,20 @@ const announcements: Announcement[] = [
     body: 'Every booking now comes with a scannable QR ticket.',
     mediaType: 'video',
     bg: colors.accent,
+    imageUrl:
+      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80',
   },
 ];
 
 export default function HomeScreen({ navigation }: Props) {
-  const openCampus = () => {
-    if (mockVerification.status === 'verified') {
+  const { user } = useAuth();
+
+  const openCampus = async () => {
+    if (!user) return;
+    const verification = await fetchVerification(user.id);
+    if (verification?.status === 'verified') {
       navigation.navigate('CampusHub');
-    } else if (mockVerification.status === 'pending' || mockVerification.status === 'rejected') {
+    } else if (verification?.status === 'pending' || verification?.status === 'rejected') {
       navigation.navigate('VerificationStatus');
     } else {
       navigation.navigate('StudentVerification');
@@ -70,17 +104,29 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.brandWordmark}>KiGoo</Text>
           </View>
-          <NotificationButton unread onPress={() => {}} />
+          <NotificationButton unread onPress={() => { }} />
         </View>
 
         <Text style={styles.greeting}>Hi, {studentName} 👋</Text>
+
 
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.campusBanner}
             activeOpacity={0.9}
             onPress={openCampus}
+            accessibilityRole="button"
+            accessibilityLabel="KiGoo Campus, book a seat"
+            accessibilityHint="Opens campus shuttle booking"
           >
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&q=80' }}
+              style={styles.campusBannerImage}
+              resizeMode="cover"
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+            <View style={styles.campusBannerOverlay} />
             <View style={styles.campusBannerTop}>
               <View style={styles.campusIconWrap}>
                 <Ionicons name="bus" size={26} color={colors.white} />
@@ -122,7 +168,17 @@ export default function HomeScreen({ navigation }: Props) {
                 key={item.id}
                 style={[styles.spotlightCard, { backgroundColor: item.bg }]}
                 activeOpacity={0.9}
+                accessibilityRole="button"
+                accessibilityLabel={item.title}
               >
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.spotlightImage}
+                  resizeMode="cover"
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+                <View style={styles.spotlightOverlay} />
                 <Ionicons name={item.icon} size={22} color={colors.white} />
                 <Text style={styles.spotlightTitle}>{item.title}</Text>
               </TouchableOpacity>
@@ -133,7 +189,11 @@ export default function HomeScreen({ navigation }: Props) {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionLabel}>COMMUNITY</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Community')}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Community')}
+              accessibilityRole="button"
+              accessibilityLabel="See all community links"
+            >
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -141,6 +201,8 @@ export default function HomeScreen({ navigation }: Props) {
             <TouchableOpacity
               style={styles.communityPill}
               onPress={() => navigation.navigate('Community')}
+              accessibilityRole="button"
+              accessibilityLabel="WhatsApp community"
             >
               <Ionicons name="logo-whatsapp" size={16} color={colors.confirmed} />
               <Text style={styles.communityText}>WhatsApp</Text>
@@ -148,6 +210,8 @@ export default function HomeScreen({ navigation }: Props) {
             <TouchableOpacity
               style={styles.communityPill}
               onPress={() => navigation.navigate('Community')}
+              accessibilityRole="button"
+              accessibilityLabel="Feedback"
             >
               <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.accent} />
               <Text style={styles.communityText}>Feedback</Text>
@@ -204,7 +268,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     borderRadius: radius.xl,
     padding: spacing.lg,
+    overflow: 'hidden',
     ...shadow.card,
+  },
+  campusBannerImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  campusBannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(91,79,199,0.55)',
   },
   campusBannerTop: {
     flexDirection: 'row',
@@ -267,6 +339,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.sm,
     justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  spotlightImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  spotlightOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   spotlightTitle: {
     fontFamily: fonts.bodySemiBold,

@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { fetchOccupiedSeats } from '../../state/bookings';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SeatSelection'>;
 
@@ -16,31 +17,31 @@ function seatLayout(totalSeats: number) {
   return Array.from({ length: rows }, (_, r) => [`${SEAT_LETTERS[r % 4]}${r + 1}L`, `${SEAT_LETTERS[r % 4]}${r + 1}R`]);
 }
 
-function occupiedSeats(tripId: string, totalSeats: number, availableSeats: number) {
-  const occupiedCount = totalSeats - availableSeats;
-  const allSeats = seatLayout(totalSeats).flat().slice(0, totalSeats);
-  let seed = tripId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  const shuffled = [...allSeats].sort(() => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280 - 0.5;
-  });
-  return new Set(shuffled.slice(0, occupiedCount));
-}
-
 export default function SeatSelectionScreen({ navigation, route }: Props) {
   const { trip } = route.params;
   const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+  const [taken, setTaken] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchOccupiedSeats(trip.id).then((seats) => {
+      setTaken(seats);
+      setLoading(false);
+    });
+  }, [trip.id]);
 
   const layout = useMemo(() => seatLayout(trip.totalSeats), [trip.totalSeats]);
-  const taken = useMemo(
-    () => occupiedSeats(trip.id, trip.totalSeats, trip.availableSeats),
-    [trip.id, trip.totalSeats, trip.availableSeats]
-  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.back}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={styles.back}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.eyebrow}>SELECT SEAT</Text>
@@ -48,6 +49,9 @@ export default function SeatSelectionScreen({ navigation, route }: Props) {
         <Text style={styles.subtitle}>{trip.time} · {trip.date}</Text>
       </View>
 
+      {loading ? (
+        <ActivityIndicator style={styles.loading} color={colors.accent} />
+      ) : (
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.busShape}>
           <View style={styles.driverRow}>
@@ -70,6 +74,9 @@ export default function SeatSelectionScreen({ navigation, route }: Props) {
                       isTaken && styles.seatTaken,
                       isSelected && styles.seatSelected,
                     ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Seat ${seat}${isTaken ? ', taken' : isSelected ? ', selected' : ', available'}`}
+                    accessibilityState={{ disabled: isTaken, selected: isSelected }}
                   >
                     <Text
                       style={[
@@ -103,6 +110,7 @@ export default function SeatSelectionScreen({ navigation, route }: Props) {
           </View>
         </View>
       </ScrollView>
+      )}
 
       <View style={styles.footer}>
         <View style={styles.footerInfo}>
@@ -140,6 +148,7 @@ const styles = StyleSheet.create({
   title: { ...typography.h1 },
   subtitle: { ...typography.body, color: colors.textMuted, marginTop: 2 },
   scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, alignItems: 'center' },
+  loading: { marginTop: spacing.xl },
   busShape: {
     backgroundColor: colors.card,
     borderRadius: radius.xl,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -17,11 +17,23 @@ import ImageUploadTile from '../../components/ImageUploadTile';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import { colors, fonts, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
-import { submitVerification } from '../../state/verification';
+import { fetchVerification, submitVerification, uploadIdCard } from '../../state/verification';
+import { useAuth } from '../../state/AuthContext';
+import { extractIdCardFields } from '../../lib/idCardOcr';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'StudentVerification'>;
 
 const UNIVERSITIES = ['NSU', 'IUB', 'AIUB'];
+
+const UNIVERSITY_ALIASES: Record<string, string> = {
+  'north south university': 'NSU',
+  'independent university, bangladesh': 'IUB',
+  'independent university bangladesh': 'IUB',
+  'ahsanullah university of science and technology': 'AIUB',
+  'american international university-bangladesh': 'AIUB',
+  'american international university bangladesh': 'AIUB',
+};
+const OCR_UNIVERSITY_NEEDLES = [...UNIVERSITIES, ...Object.keys(UNIVERSITY_ALIASES)];
 
 const DEPARTMENTS = [
   'Computer Science & Engineering',
@@ -39,17 +51,74 @@ const DEPARTMENTS = [
 ];
 
 export default function StudentVerificationScreen({ navigation }: Props) {
+  const { user } = useAuth();
+  const [existingId, setExistingId] = useState<string | undefined>(undefined);
   const [university, setUniversity] = useState<string | null>(null);
   const [department, setDepartment] = useState<string | null>(null);
   const [studentId, setStudentId] = useState('');
   const [idCardUri, setIdCardUri] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchVerification(user.id).then((v) => {
+      if (!v) return;
+      setExistingId(v.id);
+      setUniversity(v.university);
+      setDepartment(v.department);
+      setStudentId(v.student_id ?? '');
+      setIdCardUri(v.id_card_url);
+    });
+  }, [user]);
 
   const canSubmit =
     university !== null && department !== null && studentId.trim().length > 0 && idCardUri !== null;
 
-  const handleSubmit = () => {
-    submitVerification(university!, studentId.trim());
-    navigation.replace('VerificationStatus');
+  const handleIdCardPicked = async (uri: string) => {
+    setIdCardUri(uri);
+    setScanning(true);
+    const extracted = await extractIdCardFields(uri, OCR_UNIVERSITY_NEEDLES, DEPARTMENTS);
+    setScanning(false);
+
+    if (extracted.studentId && !studentId.trim()) {
+      setStudentId(extracted.studentId);
+    }
+    if (extracted.university && !university) {
+      const resolved = UNIVERSITY_ALIASES[extracted.university.toLowerCase()] ?? extracted.university;
+      if (UNIVERSITIES.includes(resolved)) setUniversity(resolved);
+    }
+    if (extracted.department && !department) {
+      setDepartment(extracted.department);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!user || !university || !department) return;
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const idCardUrl = idCardUri!.startsWith('http')
+        ? idCardUri!
+        : await uploadIdCard(user.id, idCardUri!);
+
+      const { error: submitError } = await submitVerification({
+        userId: user.id,
+        university,
+        department,
+        studentId: studentId.trim(),
+        idCardUrl,
+        existingId,
+      });
+      if (submitError) throw submitError;
+      navigation.replace('VerificationStatus');
+    } catch {
+      setError('Could not submit verification. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -81,8 +150,8 @@ export default function StudentVerificationScreen({ navigation }: Props) {
             label="STUDENT ID CARD"
             icon="image-outline"
             uri={idCardUri}
-            onChange={setIdCardUri}
-            hint="PNG, JPG up to 10MB"
+            onChange={handleIdCardPicked}
+            hint={scanning ? 'Scanning card…' : 'PNG, JPG up to 10MB'}
           />
 
           <SearchableDropdown
@@ -118,9 +187,10 @@ export default function StudentVerificationScreen({ navigation }: Props) {
             </View>
           </View>
 
+          {error && <Text style={styles.errorText}>{error}</Text>}
           <PrimaryButton
-            label="Submit Verification"
-            disabled={!canSubmit}
+            label={submitting ? 'Submitting…' : existingId ? 'Resubmit Verification' : 'Submit Verification'}
+            disabled={!canSubmit || submitting}
             onPress={handleSubmit}
             style={styles.button}
           />
@@ -165,6 +235,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   input: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.text },
+  errorText: { color: colors.danger, fontSize: 13, fontFamily: fonts.bodyMedium, marginBottom: spacing.sm, textAlign: 'center' },
   button: { marginTop: spacing.lg },
   footer: {
     ...typography.caption,

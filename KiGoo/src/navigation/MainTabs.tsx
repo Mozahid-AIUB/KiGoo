@@ -6,7 +6,8 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 import BookPlaceholderScreen from '../screens/home/BookPlaceholderScreen';
 import CenterTabButton from './CenterTabButton';
 import { colors, fonts } from '../theme/theme';
-import { mockVerification } from '../state/verification';
+import { fetchVerification } from '../state/verification';
+import { useAuth } from '../state/AuthContext';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -26,6 +27,7 @@ const icons: Record<
 
 export default function MainTabs() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   return (
     <Tab.Navigator
@@ -57,11 +59,13 @@ export default function MainTabs() {
           tabBarButton: (props) => <CenterTabButton {...props} />,
         }}
         listeners={({ navigation }) => ({
-          tabPress: (e) => {
+          tabPress: async (e) => {
             e.preventDefault();
-            if (mockVerification.status === 'verified') {
+            if (!user) return;
+            const verification = await fetchVerification(user.id);
+            if (verification?.status === 'verified') {
               navigation.getParent()?.navigate('CampusHub');
-            } else if (mockVerification.status === 'pending' || mockVerification.status === 'rejected') {
+            } else if (verification?.status === 'pending' || verification?.status === 'rejected') {
               navigation.getParent()?.navigate('VerificationStatus');
             } else {
               navigation.getParent()?.navigate('StudentVerification');

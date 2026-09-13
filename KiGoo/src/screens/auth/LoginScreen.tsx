@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -21,6 +22,9 @@ import { supabase } from '../../lib/supabase';
 WebBrowser.maybeCompleteAuthSession();
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+
+
+//error maper 
 
 function mapAuthError(message: string): string {
   if (message.includes('Invalid login credentials')) {
@@ -56,7 +60,10 @@ export default function LoginScreen({ navigation }: Props) {
   async function handleGoogleLogin() {
     setError(null);
     setGoogleSubmitting(true);
-    const redirectTo = AuthSession.makeRedirectUri({ scheme: 'kigoo' });
+    const redirectTo =
+      Platform.OS === 'web'
+        ? AuthSession.makeRedirectUri({ scheme: 'kigoo' })
+        : 'kigoo://';
 
     if (Platform.OS === 'web') {
       // On web, Chrome's popup isolation (COOP) breaks expo-web-browser's
@@ -86,11 +93,18 @@ export default function LoginScreen({ navigation }: Props) {
     }
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     setGoogleSubmitting(false);
+    Alert.alert('DEBUG result', JSON.stringify(result));
     if (result.type !== 'success') {
       return; // user cancelled — no error needed
     }
-    // Supabase exchanges the code and onAuthStateChange fires automatically
-    // once the session lands in storage; RootNavigator swaps to MainTabs.
+    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(result.url);
+    if (sessionError) {
+      Alert.alert('DEBUG exchange error', sessionError.message);
+      setError('Could not complete Google sign-in. Please try again.');
+      return;
+    }
+    // exchangeCodeForSession stores the session, onAuthStateChange fires,
+    // and RootNavigator swaps to MainTabs on its own.
   }
 
   return (
@@ -108,11 +122,14 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.formBlock}>
+          {/* Google sign-in button — opens the OAuth flow in handleGoogleLogin */}
           <TouchableOpacity
             style={styles.googleButton}
             activeOpacity={0.85}
             disabled={googleSubmitting}
             onPress={handleGoogleLogin}
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
           >
             <Ionicons name="logo-google" size={18} color={colors.text} />
             <Text style={styles.googleButtonText}>
@@ -147,7 +164,12 @@ export default function LoginScreen({ navigation }: Props) {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => setShowPassword((v) => !v)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            >
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
@@ -159,6 +181,8 @@ export default function LoginScreen({ navigation }: Props) {
           <TouchableOpacity
             onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.forgotRow}
+            accessibilityRole="button"
+            accessibilityLabel="Forgot password?"
           >
             <Text style={styles.forgotText}>Forgot password?</Text>
           </TouchableOpacity>
@@ -175,7 +199,11 @@ export default function LoginScreen({ navigation }: Props) {
         <View style={styles.footerBlock}>
           <View style={styles.signupRow}>
             <Text style={styles.signupText}>New to KiGoo? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SignUp')}
+              accessibilityRole="button"
+              accessibilityLabel="Create an account"
+            >
               <Text style={styles.signupLink}>Create an account</Text>
             </TouchableOpacity>
           </View>

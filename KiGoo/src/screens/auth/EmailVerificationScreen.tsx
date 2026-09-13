@@ -66,6 +66,9 @@ export default function EmailVerificationScreen({ navigation, route }: Props) {
             style={styles.codeRow}
             activeOpacity={1}
             onPress={() => inputRef.current?.focus()}
+            accessibilityRole="button"
+            accessibilityLabel={`Verification code, ${code.length} of ${CODE_LENGTH} digits entered`}
+            accessibilityHint="Focuses the code input"
           >
             {digits.map((digit, i) => (
               <View
@@ -102,6 +105,8 @@ export default function EmailVerificationScreen({ navigation, route }: Props) {
                 setError('Could not resend code. Please try again shortly.');
               }
             }}
+            accessibilityRole="button"
+            accessibilityLabel="Resend verification code"
           >
             <Text style={styles.resend}>{resending ? 'Sending…' : "Didn't get a code? Resend"}</Text>
           </TouchableOpacity>

@@ -14,6 +14,9 @@ export default function NotificationButton({ onPress, unread = false }: Props) {
       onPress={onPress}
       activeOpacity={0.75}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      accessibilityRole="button"
+      accessibilityLabel={unread ? 'Notifications, unread' : 'Notifications'}
+      accessibilityHint="Opens your notifications"
     >
       <Ionicons name="notifications-outline" size={20} color={colors.ink} />
       {unread ? <View style={styles.dot} /> : null}

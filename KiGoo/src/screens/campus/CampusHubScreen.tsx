@@ -1,17 +1,62 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { upcomingBookings } from '../bookings/mockBookings';
+import { fetchBookings, type Booking } from '../../state/bookings';
+import { useAuth } from '../../state/AuthContext';
 import BookingCard from '../bookings/BookingCard';
 import NotificationButton from '../../components/NotificationButton';
+import ErrorScreen from '../../components/ErrorScreen';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CampusHub'>;
 
 export default function CampusHubScreen({ navigation }: Props) {
-  const nextTrip = upcomingBookings[0] ?? null;
+  const { user } = useAuth();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  const handleRetry = useCallback(() => setRetryKey((k) => k + 1), []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      setIsLoading(true);
+      setError(null);
+      fetchBookings(user.id)
+        .then(setBookings)
+        .catch(() => setError('Could not load your trips. Check your connection and try again.'))
+        .finally(() => setIsLoading(false));
+    }, [user, retryKey])
+  );
+
+  const nextTrip =
+    bookings
+      .filter((b) => b.status === 'confirmed')
+      .sort((a, b) => a.sortAt.getTime() - b.sortAt.getTime())[0] ?? null;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingCenter}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <ErrorScreen message={error} onRetry={handleRetry} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -40,6 +85,9 @@ export default function CampusHubScreen({ navigation }: Props) {
           style={styles.bookCard}
           activeOpacity={0.9}
           onPress={() => navigation.navigate('Routes')}
+          accessibilityRole="button"
+          accessibilityLabel="Book Shuttle"
+          accessibilityHint="Pick a route, seat, and time"
         >
           <View style={styles.bookIconWrap}>
             <Ionicons name="add-circle" size={28} color={colors.white} />
@@ -53,7 +101,7 @@ export default function CampusHubScreen({ navigation }: Props) {
 
         {nextTrip && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>TODAY'S TRIP</Text>
+            <Text style={styles.sectionLabel}>NEXT TRIP</Text>
             <BookingCard booking={nextTrip} />
           </View>
         )}
@@ -62,6 +110,8 @@ export default function CampusHubScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('MyTrips')}
+            accessibilityRole="button"
+            accessibilityLabel="My Trips"
           >
             <Ionicons name="ticket-outline" size={20} color={colors.text} />
             <Text style={styles.menuText}>My Trips</Text>
@@ -70,6 +120,8 @@ export default function CampusHubScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('Plans')}
+            accessibilityRole="button"
+            accessibilityLabel="My Plan"
           >
             <Ionicons name="card-outline" size={20} color={colors.text} />
             <Text style={styles.menuText}>My Plan</Text>
@@ -78,6 +130,8 @@ export default function CampusHubScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('PaymentMethods')}
+            accessibilityRole="button"
+            accessibilityLabel="Payment"
           >
             <Ionicons name="wallet-outline" size={20} color={colors.text} />
             <Text style={styles.menuText}>Payment</Text>
@@ -86,6 +140,8 @@ export default function CampusHubScreen({ navigation }: Props) {
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate('Community')}
+            accessibilityRole="button"
+            accessibilityLabel="Community"
           >
             <Ionicons name="people-outline" size={20} color={colors.text} />
             <Text style={styles.menuText}>Community</Text>
@@ -99,6 +155,7 @@ export default function CampusHubScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
+  loadingCenter: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scroll: { paddingBottom: spacing.xl },
   header: {
     flexDirection: 'row',

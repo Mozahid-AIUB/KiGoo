@@ -17,6 +17,7 @@ import PaymentMethodsScreen from '../screens/campus/PaymentMethodsScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import StudentVerificationScreen from '../screens/verification/StudentVerificationScreen';
 import VerificationStatusScreen from '../screens/verification/VerificationStatusScreen';
+import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import type { RouteId, Trip } from '../screens/home/mockTrips';
 import { useAuth } from '../state/AuthContext';
 
@@ -39,6 +40,7 @@ export type RootStackParamList = {
   Community: undefined;
   StudentVerification: undefined;
   VerificationStatus: undefined;
+  EditProfile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -98,6 +100,11 @@ export default function RootNavigator() {
           <Stack.Screen
             name="VerificationStatus"
             component={VerificationStatusScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
             options={{ headerShown: false }}
           />
         </>

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import {
   Dimensions,
+  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -17,6 +18,7 @@ export type Announcement = {
   body: string;
   mediaType: 'image' | 'video';
   bg: string;
+  imageUrl?: string;
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -47,6 +49,16 @@ export default function AnnouncementSlider({ items }: { items: Announcement[] })
       >
         {items.map((item) => (
           <View key={item.id} style={[styles.card, { backgroundColor: item.bg, width: CARD_WIDTH }]}>
+            {item.imageUrl && (
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.image}
+                resizeMode="cover"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+            )}
+            {item.imageUrl && <View style={styles.overlay} />}
             <View style={styles.mediaBadge}>
               <Ionicons
                 name={item.mediaType === 'video' ? 'play-circle' : 'image'}
@@ -80,6 +92,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     padding: spacing.md,
     justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  image: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   mediaBadge: {
     position: 'absolute',

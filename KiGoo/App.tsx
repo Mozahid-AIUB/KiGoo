@@ -9,6 +9,10 @@ import RootNavigator from './src/navigation/RootNavigator';
 import { AuthProvider } from './src/state/AuthContext';
 
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,
+});
 
 export default function App() {
   const [fontsLoaded] = useFonts({

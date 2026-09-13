@@ -1,21 +1,28 @@
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
-import { routes } from '../home/mockTrips';
-import { mockVerification } from '../../state/verification';
+import { fetchRoutes, type Route } from '../home/mockTrips';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
+import { useAuth } from '../../state/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QrTicket'>;
 
-const studentName = 'Mozahid';
-
 export default function QrTicketScreen({ navigation, route }: Props) {
   const { trip, seat, bookingId } = route.params;
-  const routeInfo = routes.find((r) => r.id === trip.routeId)!;
+  const { user } = useAuth();
+  const studentName = (user?.user_metadata?.full_name as string | undefined) ?? user?.email ?? 'Student';
+  const [routeInfo, setRouteInfo] = useState<Route | null>(null);
+
+  useEffect(() => {
+    fetchRoutes().then((routes) => {
+      setRouteInfo(routes.find((r) => r.id === trip.routeId) ?? null);
+    });
+  }, [trip.routeId]);
 
   const qrPayload = JSON.stringify({
     studentName,
@@ -24,7 +31,7 @@ export default function QrTicketScreen({ navigation, route }: Props) {
     busNo: trip.busNo,
     seat,
     departureTime: `${trip.time} · ${trip.date}`,
-    verificationStatus: mockVerification.status,
+    verificationStatus: 'verified',
   });
 
   return (
@@ -38,7 +45,7 @@ export default function QrTicketScreen({ navigation, route }: Props) {
 
         <View style={styles.ticketCard}>
           <View style={styles.ticketHeader}>
-            <Text style={styles.routeLabel}>{routeInfo.label}</Text>
+            <Text style={styles.routeLabel}>{routeInfo?.label ?? '—'}</Text>
             <View style={styles.statusPill}>
               <Text style={styles.statusPillText}>CONFIRMED</Text>
             </View>

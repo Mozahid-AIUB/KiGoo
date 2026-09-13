@@ -1,7 +1,16 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { createTrip, updateTrip, cancelTrip, addVehicle, type ActionState } from "./actions";
+import { useActionState, useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  createTrip,
+  updateTrip,
+  cancelTrip,
+  addVehicle,
+  fetchPassengers,
+  type ActionState,
+  type PassengerRow,
+} from "./actions";
 import type { TripRow, VehicleRow } from "./page";
 
 const DIRECTIONS = [
@@ -26,12 +35,27 @@ export default function TripsClient({
   const [showCreate, setShowCreate] = useState(false);
   const [editingTrip, setEditingTrip] = useState<TripRow | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [viewingPassengers, setViewingPassengers] = useState<TripRow | null>(null);
 
   return (
     <div className="min-h-screen bg-[#F7F6FB] text-[#3D3170]">
       <header className="border-b border-[#E4E1F5] bg-white px-8 py-5">
         <p className="text-[11px] font-semibold tracking-wide text-[#6B5FD9]">KIGOO ADMIN</p>
-        <h1 className="mt-1 text-2xl font-bold text-[#221B3D]">Trip Management</h1>
+        <div className="mt-1 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-[#221B3D]">Trip Management</h1>
+          <nav className="flex gap-4 text-sm font-semibold text-[#7A7590]">
+            <span className="text-[#221B3D]">Trips</span>
+            <Link href="/routes" className="hover:text-[#221B3D]">
+              Routes
+            </Link>
+            <Link href="/verifications" className="hover:text-[#221B3D]">
+              Verifications
+            </Link>
+            <Link href="/checkin" className="hover:text-[#221B3D]">
+              Check-in
+            </Link>
+          </nav>
+        </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-8 py-8">
@@ -64,6 +88,7 @@ export default function TripsClient({
                 <th className="px-5 py-3 font-semibold">Direction</th>
                 <th className="px-5 py-3 font-semibold">Vehicle</th>
                 <th className="px-5 py-3 font-semibold">Seats</th>
+                <th className="px-5 py-3 font-semibold">Passengers</th>
                 <th className="px-5 py-3 font-semibold">Status</th>
                 <th className="px-5 py-3 font-semibold text-right">Actions</th>
               </tr>
@@ -71,7 +96,7 @@ export default function TripsClient({
             <tbody>
               {initialTrips.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-[#7A7590]">
+                  <td colSpan={8} className="px-5 py-10 text-center text-[#7A7590]">
                     No trips yet. Create the first one.
                   </td>
                 </tr>
@@ -86,6 +111,18 @@ export default function TripsClient({
                     <td className="px-5 py-3">{trip.vehicle?.plate_no ?? "—"}</td>
                     <td className="px-5 py-3">
                       {trip.available_seats}/{trip.total_seats}
+                    </td>
+                    <td className="px-5 py-3">
+                      {trip.booked_count > 0 ? (
+                        <button
+                          onClick={() => setViewingPassengers(trip)}
+                          className="font-semibold text-[#6B5FD9] hover:underline"
+                        >
+                          {trip.booked_count} booked
+                        </button>
+                      ) : (
+                        <span className="text-[#7A7590]">None yet</span>
+                      )}
                     </td>
                     <td className="px-5 py-3">
                       <span
@@ -139,7 +176,58 @@ export default function TripsClient({
         />
       )}
       {showAddVehicle && <AddVehicleModal onClose={() => setShowAddVehicle(false)} />}
+      {viewingPassengers && (
+        <PassengersModal trip={viewingPassengers} onClose={() => setViewingPassengers(null)} />
+      )}
     </div>
+  );
+}
+
+function PassengersModal({ trip, onClose }: { trip: TripRow; onClose: () => void }) {
+  const [passengers, setPassengers] = useState<PassengerRow[] | null>(null);
+
+  useEffect(() => {
+    fetchPassengers(trip.id).then(setPassengers);
+  }, [trip.id]);
+
+  return (
+    <Modal title={`Passengers · ${formatTime(trip.departure_time)}, ${trip.trip_date}`} onClose={onClose}>
+      {passengers === null ? (
+        <p className="py-6 text-center text-sm text-[#7A7590]">Loading…</p>
+      ) : passengers.length === 0 ? (
+        <p className="py-6 text-center text-sm text-[#7A7590]">No one has booked this trip yet.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {passengers.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between rounded-lg border border-[#E4E1F5] px-3 py-2"
+            >
+              <div>
+                <p className="text-sm font-semibold text-[#221B3D]">
+                  {p.profile ? `${p.profile.first_name} ${p.profile.last_name}` : "Unknown"}
+                </p>
+                <p className="text-xs text-[#7A7590]">
+                  {p.profile?.phone ?? "—"} · {p.booking_code}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-[#221B3D]">Seat {p.seat}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    p.status === "boarded"
+                      ? "bg-[#E4F5EC] text-[#1B9C6E]"
+                      : "bg-[#FBF0DD] text-[#B8862E]"
+                  }`}
+                >
+                  {p.status === "boarded" ? "Boarded" : "Booked"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
   );
 }
 

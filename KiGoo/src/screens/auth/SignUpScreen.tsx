@@ -80,7 +80,13 @@ export default function SignUpScreen({ navigation }: Props) {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back} hitSlop={12}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.back}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
 
@@ -157,6 +163,9 @@ export default function SignUpScreen({ navigation }: Props) {
                   style={[styles.genderPill, gender === g.value && styles.genderPillActive]}
                   onPress={() => setGender(g.value)}
                   activeOpacity={0.85}
+                  accessibilityRole="button"
+                  accessibilityLabel={g.label}
+                  accessibilityState={{ selected: gender === g.value }}
                 >
                   <Text
                     style={[
@@ -182,7 +191,12 @@ export default function SignUpScreen({ navigation }: Props) {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
-              <TouchableOpacity onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() => setShowPassword((v) => !v)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              >
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
@@ -214,7 +228,11 @@ export default function SignUpScreen({ navigation }: Props) {
 
           <View style={styles.loginRow}>
             <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              accessibilityRole="button"
+              accessibilityLabel="Log in"
+            >
               <Text style={styles.loginLink}>Log in</Text>
             </TouchableOpacity>
           </View>

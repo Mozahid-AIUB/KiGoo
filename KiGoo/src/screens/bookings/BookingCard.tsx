@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors, fonts, radius, shadow, spacing } from '../../theme/theme';
-import type { Booking } from './mockBookings';
+import type { Booking } from '../../state/bookings';
 
 const statusColor = {
   confirmed: colors.confirmed,
@@ -16,7 +16,13 @@ const statusLabel = {
 
 const NOTCH = 14;
 
-export default function BookingCard({ booking }: { booking: Booking }) {
+export default function BookingCard({
+  booking,
+  onCancel,
+}: {
+  booking: Booking;
+  onCancel?: () => void;
+}) {
   const isPast = booking.status !== 'confirmed';
 
   return (
@@ -39,8 +45,13 @@ export default function BookingCard({ booking }: { booking: Booking }) {
         </Text>
         <Text style={styles.seatNo}>{booking.seatNo}</Text>
         <Text style={styles.stopLabel}>{booking.stop}</Text>
-        {booking.status === 'confirmed' && (
-          <TouchableOpacity>
+        {booking.status === 'confirmed' && onCancel && (
+          <TouchableOpacity
+            onPress={onCancel}
+            accessibilityRole="button"
+            accessibilityLabel={`Cancel booking for ${booking.route}`}
+            accessibilityHint="Shows a confirmation before cancelling"
+          >
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         )}

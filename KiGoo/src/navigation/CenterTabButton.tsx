@@ -10,6 +10,9 @@ export default function CenterTabButton({ onPress }: BottomTabBarButtonProps) {
         style={styles.button}
         activeOpacity={0.85}
         onPress={(e) => onPress?.(e)}
+        accessibilityRole="button"
+        accessibilityLabel="Book a shuttle"
+        accessibilityHint="Opens the campus booking flow"
       >
         <Ionicons name="bus" size={22} color={colors.white} />
       </TouchableOpacity>

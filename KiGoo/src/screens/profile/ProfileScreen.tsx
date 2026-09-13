@@ -1,17 +1,48 @@
+import { useCallback, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../state/AuthContext';
+import type { RootStackParamList } from '../../navigation/RootNavigator';
 
-const menuItems = ['Edit Profile', 'Default Stop', 'Help & Support'];
+type Profile = {
+  first_name: string;
+  last_name: string;
+  phone: string;
+  avatar_url: string | null;
+};
+
+const menuItems = ['Edit Profile', 'Default Stop', 'Help & Support'] as const;
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
-  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
-  const name = (user?.user_metadata?.full_name as string | undefined) ?? 'Mozahid';
-  const initial = name.charAt(0).toUpperCase();
-  const phone = (user?.user_metadata?.phone as string | undefined) ?? 'No phone number';
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      supabase
+        .from('profiles')
+        .select('first_name, last_name, phone, avatar_url')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => data && setProfile(data));
+    }, [user])
+  );
+
+  const name = profile ? `${profile.first_name} ${profile.last_name}`.trim() : '';
+  const initial = (name || 'K').charAt(0).toUpperCase();
+  const phone = profile?.phone || 'No phone number';
+
+  function handleMenuPress(item: (typeof menuItems)[number]) {
+    if (item === 'Edit Profile') {
+      navigation.navigate('EditProfile');
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -21,15 +52,19 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.card}>
-        {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+        {profile?.avatar_url ? (
+          <Image
+            source={{ uri: profile.avatar_url }}
+            style={styles.avatarImage}
+            accessibilityLabel="Your profile photo"
+          />
         ) : (
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initial}</Text>
           </View>
         )}
         <View>
-          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.name}>{name || 'Loading…'}</Text>
           <Text style={styles.phone}>{phone}</Text>
         </View>
       </View>
@@ -39,6 +74,9 @@ export default function ProfileScreen() {
           <TouchableOpacity
             key={item}
             style={[styles.menuItem, i === menuItems.length - 1 && styles.menuItemLast]}
+            onPress={() => handleMenuPress(item)}
+            accessibilityRole="button"
+            accessibilityLabel={item}
           >
             <Text style={styles.menuText}>{item}</Text>
             <Text style={styles.chevron}>›</Text>
@@ -46,7 +84,13 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logoutBtn} onPress={() => supabase.auth.signOut()}>
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={() => supabase.auth.signOut()}
+        accessibilityRole="button"
+        accessibilityLabel="Log out"
+        accessibilityHint="Signs you out of KiGoo"
+      >
         <Text style={styles.logoutText}>Log out</Text>
       </TouchableOpacity>
     </SafeAreaView>

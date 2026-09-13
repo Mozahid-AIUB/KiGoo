@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -5,7 +6,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
 import { colors, fonts, radius, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
-import { approveVerification, mockVerification } from '../../state/verification';
+import { fetchVerification, type Verification } from '../../state/verification';
+import { useAuth } from '../../state/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'VerificationStatus'>;
 
@@ -34,8 +36,24 @@ const content = {
 };
 
 export default function VerificationStatusScreen({ navigation }: Props) {
-  const status = mockVerification.status === 'none' ? 'pending' : mockVerification.status;
-  const info = content[status as 'pending' | 'verified' | 'rejected'];
+  const { user } = useAuth();
+  const [verification, setVerification] = useState<Verification | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchVerification(user.id).then((v) => {
+      setVerification(v);
+      setLoading(false);
+    });
+  }, [user]);
+
+  if (loading || !verification) {
+    return <SafeAreaView style={styles.container} edges={['top', 'bottom']} />;
+  }
+
+  const status = verification.status;
+  const info = content[status];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -45,17 +63,21 @@ export default function VerificationStatusScreen({ navigation }: Props) {
             <Ionicons name={info.icon} size={30} color={info.iconColor} />
           </View>
           <Text style={styles.title}>{info.title}</Text>
-          <Text style={styles.subtitle}>{info.body}</Text>
+          <Text style={styles.subtitle}>
+            {status === 'rejected' && verification.rejection_reason
+              ? verification.rejection_reason
+              : info.body}
+          </Text>
 
-          {mockVerification.university && (
+          {verification.university && (
             <View style={styles.detailsCard}>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>University</Text>
-                <Text style={styles.detailValue}>{mockVerification.university}</Text>
+                <Text style={styles.detailValue}>{verification.university}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Student ID</Text>
-                <Text style={styles.detailValue}>{mockVerification.studentId}</Text>
+                <Text style={styles.detailValue}>{verification.student_id}</Text>
               </View>
             </View>
           )}
@@ -67,7 +89,7 @@ export default function VerificationStatusScreen({ navigation }: Props) {
           )}
           {status === 'rejected' && (
             <PrimaryButton
-              label="Try Again"
+              label="Edit & Resubmit"
               onPress={() => navigation.replace('StudentVerification')}
             />
           )}
@@ -75,13 +97,10 @@ export default function VerificationStatusScreen({ navigation }: Props) {
             <>
               <PrimaryButton label="Back to Home" variant="outline" onPress={() => navigation.goBack()} />
               <TouchableOpacity
-                style={styles.devButton}
-                onPress={() => {
-                  approveVerification();
-                  navigation.replace('VerificationStatus');
-                }}
+                style={styles.editLink}
+                onPress={() => navigation.replace('StudentVerification')}
               >
-                <Text style={styles.devButtonText}>⚙ Simulate Approval (dev only)</Text>
+                <Text style={styles.editLinkText}>Edit submission</Text>
               </TouchableOpacity>
             </>
           )}
@@ -124,6 +143,6 @@ const styles = StyleSheet.create({
   detailLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
   detailValue: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text },
   actions: { marginBottom: spacing.lg },
-  devButton: { alignItems: 'center', marginTop: spacing.md },
-  devButtonText: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted },
+  editLink: { alignItems: 'center', marginTop: spacing.md },
+  editLinkText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.accent },
 });

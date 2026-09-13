@@ -16,6 +16,9 @@ export default function PrimaryButton({ label, onPress, disabled, variant = 'fil
       disabled={disabled}
       onPress={onPress}
       activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled }}
     >
       <Text style={styles[`${variant}Text` as const]}>{label}</Text>
     </TouchableOpacity>

@@ -79,6 +79,27 @@ export async function cancelTrip(tripId: string) {
   revalidatePath("/trips");
 }
 
+export type PassengerRow = {
+  id: string;
+  booking_code: string;
+  seat: string;
+  status: "booked" | "boarded" | "cancelled";
+  profile: { first_name: string; last_name: string; phone: string } | null;
+};
+
+export async function fetchPassengers(tripId: string): Promise<PassengerRow[]> {
+  const supabase = createSupabaseServiceClient();
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("id, booking_code, seat, status, profile:profiles(first_name, last_name, phone)")
+    .eq("trip_id", tripId)
+    .in("status", ["booked", "boarded"])
+    .order("seat", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as PassengerRow[];
+}
+
 export async function addVehicle(
   _prevState: ActionState,
   formData: FormData

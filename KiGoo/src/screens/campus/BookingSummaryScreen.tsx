@@ -1,36 +1,57 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import PrimaryButton from '../../components/PrimaryButton';
-import { routes } from '../home/mockTrips';
+import { fetchRoutes, type Route } from '../home/mockTrips';
+import { createBooking } from '../../state/bookings';
 import { colors, fonts, radius, shadow, spacing, typography } from '../../theme/theme';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingSummary'>;
 
-function generateBookingId() {
-  const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `KG-${rand}`;
-}
-
 export default function BookingSummaryScreen({ navigation, route }: Props) {
   const { trip, seat } = route.params;
   const [confirming, setConfirming] = useState(false);
-  const routeInfo = routes.find((r) => r.id === trip.routeId)!;
+  const [error, setError] = useState<string | null>(null);
+  const [routeInfo, setRouteInfo] = useState<Route | null>(null);
 
-  const handleConfirm = () => {
+  useEffect(() => {
+    fetchRoutes().then((routes) => {
+      setRouteInfo(routes.find((r) => r.id === trip.routeId) ?? null);
+    });
+  }, [trip.routeId]);
+
+  const handleConfirm = async () => {
+    setError(null);
     setConfirming(true);
-    setTimeout(() => {
-      navigation.replace('QrTicket', { trip, seat, bookingId: generateBookingId() });
-    }, 600);
+    const { data: booking, error: bookingError } = await createBooking(trip.id, seat);
+    setConfirming(false);
+
+    if (bookingError || !booking) {
+      setError(
+        bookingError?.message.includes('full')
+          ? 'This trip just filled up. Please pick another seat or trip.'
+          : bookingError?.message.includes('already')
+          ? 'That seat was just taken. Please pick another.'
+          : 'Could not confirm your booking. Please try again.'
+      );
+      return;
+    }
+    navigation.replace('QrTicket', { trip, seat, bookingId: booking.booking_code });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={12} style={styles.back}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={styles.back}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
         </TouchableOpacity>
         <Text style={styles.eyebrow}>REVIEW & CONFIRM</Text>
@@ -43,7 +64,7 @@ export default function BookingSummaryScreen({ navigation, route }: Props) {
             <Ionicons name="git-branch-outline" size={18} color={colors.textMuted} />
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Route</Text>
-              <Text style={styles.rowValue}>{routeInfo.label}</Text>
+              <Text style={styles.rowValue}>{routeInfo?.label ?? '—'}</Text>
             </View>
           </View>
 
@@ -53,7 +74,7 @@ export default function BookingSummaryScreen({ navigation, route }: Props) {
             <Ionicons name="location-outline" size={18} color={colors.textMuted} />
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Pickup Point</Text>
-              <Text style={styles.rowValue}>{routeInfo.pickupPoint}</Text>
+              <Text style={styles.rowValue}>{routeInfo?.pickupPoint ?? '—'}</Text>
             </View>
           </View>
 
@@ -102,6 +123,7 @@ export default function BookingSummaryScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={styles.footer}>
+        {error && <Text style={styles.errorText}>{error}</Text>}
         <PrimaryButton
           label={confirming ? 'Confirming…' : 'Confirm Booking'}
           disabled={confirming}
@@ -165,5 +187,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.card,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontFamily: fonts.bodyMedium,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
 });

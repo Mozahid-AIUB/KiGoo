@@ -46,7 +46,14 @@ export default function SearchableDropdown({
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity style={styles.trigger} activeOpacity={0.85} onPress={() => setOpen(true)}>
+      <TouchableOpacity
+        style={styles.trigger}
+        activeOpacity={0.85}
+        onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}, ${value ?? placeholder}`}
+        accessibilityHint={`Opens a list to choose ${label.toLowerCase()}`}
+      >
         <Ionicons name={icon} size={18} color={colors.textMuted} />
         <Text style={[styles.triggerText, !value && styles.placeholderText]}>
           {value ?? placeholder}
@@ -57,7 +64,12 @@ export default function SearchableDropdown({
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setOpen(false)} hitSlop={12}>
+            <TouchableOpacity
+              onPress={() => setOpen(false)}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
               <Ionicons name="close" size={24} color={colors.ink} />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>{label}</Text>
@@ -85,7 +97,13 @@ export default function SearchableDropdown({
               <Text style={styles.emptyText}>No matches found.</Text>
             }
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.option} onPress={() => handleSelect(item)}>
+              <TouchableOpacity
+                style={styles.option}
+                onPress={() => handleSelect(item)}
+                accessibilityRole="button"
+                accessibilityLabel={item}
+                accessibilityState={{ selected: value === item }}
+              >
                 <Text style={styles.optionText}>{item}</Text>
                 {value === item && <Ionicons name="checkmark" size={18} color={colors.accent} />}
               </TouchableOpacity>
